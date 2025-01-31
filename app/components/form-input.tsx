@@ -4,10 +4,14 @@ export default function FormInput({
   name,
   type,
   placeholder,
+  errors,
+  value,
 }: {
   name: string;
   type: string;
   placeholder: string;
+  errors: string[];
+  value: string;
 }) {
   return (
     <>
@@ -16,7 +20,11 @@ export default function FormInput({
         name={name}
         type={type}
         placeholder={placeholder}
+        defaultValue={value}
       />
+      {errors.map((error, index) => (
+        <p className="text-sm text-red-500 mt-2">{error}</p>
+      ))}
     </>
   );
 }
