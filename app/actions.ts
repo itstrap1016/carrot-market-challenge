@@ -1,52 +1,44 @@
 "use server";
 
+import db from "@/lib/db";
+import getSession from "@/lib/session";
 import { z } from "zod";
 
 const formSchema = z.object({
-  email: z
-    .string()
-    .email()
-    .refine((email) => email.endsWith("@zod.com"), {
-      message: "Only @zod.com emails are allowed",
-    }),
-  username: z.string().min(5, "Username should be at least 5 characters long"),
-  password: z
-    .string()
-    .min(10, "Password should be at least 10 characters long")
-    .refine((password) => /\d/.test(password), {
-      message: "Password should contain at least one number",
-    }),
+  tweet: z.string().min(1, "트윗은 최소 1글자 이상이어야 합니다"),
 });
 
-export async function handleForm(prevState: any, formData: FormData) {
-  const data = {
-    email: formData.get("email") as string,
-    username: formData.get("username") as string,
-    password: formData.get("password") as string,
-  };
+export type CreateTweetResponse =
+  | {
+      id: number;
+      tweet: string;
+      createdAt: Date;
+      updatedAt: Date;
+      authorId: number;
+    } // 트윗 생성 성공
+  | { fieldErrors: Record<string, string> };
 
-  const result = formSchema.safeParse(data);
+export default async function createTweet(prevState: any, formData: FormData) {
+  const session = await getSession();
 
-  if (!result.success) {
-    const fieldErrors = result.error.flatten().fieldErrors;
-    return {
-      logined: false,
-      errors: {
-        email: fieldErrors.email || [],
-        username: fieldErrors.username || [],
-        password: fieldErrors.password || [],
-      },
-      values: data,
-    };
+  if (!session.id) {
+    throw new Error("로그인이 필요합니다.");
   }
 
-  return {
-    logined: true,
-    errors: {
-      email: [],
-      username: [],
-      password: [],
-    },
-    values: data,
-  };
+  const tweet = formData.get("tweet") as string;
+  const result = await formSchema.spa({ tweet: tweet });
+
+  if (!result.success) {
+    return result.error.flatten();
+  } else {
+    const newTweet = await db.tweet.create({
+      data: {
+        tweet,
+        authorId: Number(session.id), // `session.id`를 `Int`로 변환
+      },
+      select: {
+        id: true,
+      },
+    });
+  }
 }
