@@ -8,16 +8,6 @@ const formSchema = z.object({
   tweet: z.string().min(1, "트윗은 최소 1글자 이상이어야 합니다"),
 });
 
-export type CreateTweetResponse =
-  | {
-      id: number;
-      tweet: string;
-      createdAt: Date;
-      updatedAt: Date;
-      authorId: number;
-    } // 트윗 생성 성공
-  | { fieldErrors: Record<string, string> };
-
 export default async function createTweet(prevState: any, formData: FormData) {
   const session = await getSession();
 

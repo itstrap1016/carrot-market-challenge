@@ -7,6 +7,7 @@ import Button from "./components/button";
 import getTweets, { TweetInterface } from "./getTweets";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import AddTweet from "./components/add-tweet";
 
 export default function Home() {
   const [state, formAction] = useActionState(createTweet, null);
@@ -31,18 +32,10 @@ export default function Home() {
 
   return (
     <div className="pt-20 w-[500px] mx-auto">
-      <form
-        action={(formData: FormData) => handleTweetUpload(formData)}
-        className="flex flex-col gap-4 w-full"
-      >
-        <Input
-          type="text"
-          name="tweet"
-          placeholder="트윗을 작성해주세요"
-          errors={state?.fieldErrors?.tweet}
-        />
-        <Button text="업로드" />
-      </form>
+      <AddTweet
+        handleTweetUpload={handleTweetUpload}
+        errors={state?.fieldErrors?.tweet}
+      />
 
       <ul className="mt-4">
         {tweets.map((tweet, index) => (
